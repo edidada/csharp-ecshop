@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+TestResults/
+*.user
+*.suo
+appsettings.Development.json
+*.db
+.idea
+*.iml
