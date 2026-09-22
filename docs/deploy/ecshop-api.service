@@ -1,5 +1,5 @@
 [Unit]
-Description=cpp_ecshop API
+Description=EcShop ASP.NET Core API
 After=network-online.target
 Wants=network-online.target
 
@@ -7,9 +7,10 @@ Wants=network-online.target
 Type=simple
 User=ecshop
 Group=ecshop
-WorkingDirectory=/opt/cpp-ecshop
+WorkingDirectory=/opt/csharp-ecshop
 EnvironmentFile=/etc/ecshop/ecshop.env
-ExecStart=/opt/cpp-ecshop/bin/ecshop_api --bind=127.0.0.1 --port=8080
+Environment=ASPNETCORE_URLS=http://127.0.0.1:8080
+ExecStart=/usr/bin/dotnet /opt/csharp-ecshop/EcShop.Api.dll
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true

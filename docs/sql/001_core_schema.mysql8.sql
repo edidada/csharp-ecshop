@@ -1,4 +1,4 @@
--- cpp_ecshop core schema; MySQL 8.0+, InnoDB, utf8mb4.
+-- csharp-ecshop core schema; MySQL 8.0+, InnoDB, utf8mb4.
 -- All monetary values are DECIMAL(12,2). Timestamps use UTC.
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';

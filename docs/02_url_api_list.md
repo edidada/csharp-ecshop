@@ -1,10 +1,10 @@
 # URL 与功能清单
 
-PHP 参考项目把页面、表单提交和 AJAX 混在 `xxx.php?act=...` / `flow.php?step=...` 入口中。C++ 版本将页面与 API 分离：浏览器页面后续可由 SPA/SSR 消费 JSON API；下表是实现优先级而非已实现清单。
+PHP 参考项目把页面、表单提交和 AJAX 混在 `xxx.php?act=...` / `flow.php?step=...` 入口中。C# 版本将页面与 API 分离：浏览器页面后续可由 SPA/SSR 消费 JSON API；下表是实现优先级而非已实现清单。
 
 ## 前台核心映射
 
-| 优先级 | PHP 入口（参考） | C++ REST API | 方法 | 主要表 |
+| 优先级 | PHP 入口（参考） | C# REST API | 方法 | 主要表 |
 | --- | --- | --- | --- |
 | M0 | — | `/healthz` | GET | — |
 | M1 | `index.php` | `/api/v1/home` | GET | goods, category, article |

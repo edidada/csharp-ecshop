@@ -53,15 +53,15 @@ CREATE INDEX IF NOT EXISTS idx_ecs_activity_active ON ecs_goods_activity(act_typ
 INSERT OR IGNORE INTO ecs_category(cat_id, cat_name) VALUES(1, '示例分类');
 INSERT OR IGNORE INTO ecs_brand(brand_id, brand_name) VALUES(1, '示例品牌');
 INSERT OR IGNORE INTO ecs_article_cat(cat_id, cat_name, cat_desc) VALUES(1, '商城公告', '示例文章分类');
-INSERT OR IGNORE INTO ecs_article(article_id, cat_id, title, author, article_desc, content, is_open) VALUES(1, 1, 'C++ ECSHOP 项目说明', 'cpp_ecshop', '用于验证文章 URL 的示例文章', '这是来自 SQLite ecs_article 表的示例正文。', 1);
+INSERT OR IGNORE INTO ecs_article(article_id, cat_id, title, author, article_desc, content, is_open) VALUES(1, 1, 'C# ECSHOP 项目说明', 'csharp_ecshop', '用于验证文章 URL 的示例文章', '这是来自 SQLite ecs_article 表的示例正文。', 1);
 INSERT OR IGNORE INTO ecs_region(region_id, parent_id, region_name, region_type) VALUES(1, 0, '中国', 1);
 INSERT OR IGNORE INTO ecs_region(region_id, parent_id, region_name, region_type) VALUES(2, 1, '北京市', 2);
-INSERT OR IGNORE INTO ecs_goods(goods_id,cat_id,goods_sn,goods_name,brand_id,goods_number,market_price,shop_price,goods_brief,goods_desc,is_on_sale,is_delete) VALUES(12,1,'CPP-EC-001','C++ 入门商品',1,18,69.90,49.90,'用于验证第一个 HTTP URL 的示例商品','来自 SQLite ecs_goods 表',1,0);
+INSERT OR IGNORE INTO ecs_goods(goods_id,cat_id,goods_sn,goods_name,brand_id,goods_number,market_price,shop_price,goods_brief,goods_desc,is_on_sale,is_delete) VALUES(12,1,'CS-EC-001','C# 入门商品',1,18,69.90,49.90,'用于验证第一个 HTTP URL 的示例商品','来自 SQLite ecs_goods 表',1,0);
 INSERT OR IGNORE INTO ecs_goods(goods_id,cat_id,goods_sn,goods_name,brand_id,goods_number,market_price,shop_price,goods_brief,goods_desc,is_on_sale,is_delete) VALUES(13,1,'CPP-EC-002','已下架商品',1,5,129.90,99.90,'不可公开访问','用于验证可见性过滤',0,0);
 INSERT OR IGNORE INTO ecs_goods_attr(goods_attr_id,goods_id,attr_id,attr_value,attr_price) VALUES(1001,12,1,'扩展版','5.00');
 INSERT OR IGNORE INTO ecs_goods_attr(goods_attr_id,goods_id,attr_id,attr_value,attr_price) VALUES(1005,12,2,'标准包装','0.00');
 INSERT OR IGNORE INTO ecs_products(product_id,goods_id,goods_attr,product_sn,product_number) VALUES(81,12,'1001|1005','CPP-EC-001-EXT',10);
 INSERT OR IGNORE INTO ecs_shipping(shipping_id,shipping_name,enabled,shipping_fee) VALUES(1,'标准快递',1,'8.00');
 INSERT OR IGNORE INTO ecs_payment(pay_id,pay_name,enabled,pay_fee) VALUES(1,'在线支付',1,'0.00');
-INSERT OR IGNORE INTO ecs_goods_activity(act_id,act_name,act_desc,act_type,goods_id,goods_name,start_time,end_time,is_finished,ext_info) VALUES(1,'C++ 示例团购','用于学习 goods_activity 的公开读取',1,12,'C++ 入门商品',0,4102444800,0,'{"cur_price":"39.90"}');
+INSERT OR IGNORE INTO ecs_goods_activity(act_id,act_name,act_desc,act_type,goods_id,goods_name,start_time,end_time,is_finished,ext_info) VALUES(1,'C# 示例团购','用于学习 goods_activity 的公开读取',1,12,'C# 入门商品',0,4102444800,0,'{"cur_price":"39.90"}');
 COMMIT;

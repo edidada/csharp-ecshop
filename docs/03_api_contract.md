@@ -1,6 +1,6 @@
 # HTTP API 契约
 
-Base URL：`http://localhost:8080/api/v1`；仅 JSON，`Content-Type: application/json; charset=utf-8`。成功响应直接返回资源；错误固定为：
+这是审核后的业务 URL 的目标契约；当前仅实现基础设施探针 `/healthz` 和 `/readyz`。Base URL：`http://localhost:8080/api/v1`；仅 JSON，`Content-Type: application/json; charset=utf-8`。成功响应直接返回资源；错误固定为：
 
 ```json
 {"code":"validation_error","message":"quantity must be between 1 and 999","request_id":"...","details":{"field":"quantity"}}
@@ -42,7 +42,7 @@ Base URL：`http://localhost:8080/api/v1`；仅 JSON，`Content-Type: applicatio
 {"username":"alice","email":"alice@example.test","password":"not-a-real-password","agreement_accepted":true}
 ```
 
-返回 `201` 和 `{ "id": 7, "username": "alice" }`。密码长度、唯一性和邮箱格式由服务端验证，数据库仅存 libsodium 的 password hash。
+返回 `201` 和 `{ "id": 7, "username": "alice" }`。密码长度、唯一性和邮箱格式由服务端验证，数据库仅存现代、可升级的密码哈希。
 
 `POST /auth/login` 请求 `{ "username":"alice", "password":"..." }`，成功返回 204 并写入 Cookie。`POST /auth/logout` 返回 204 并作废当前会话。
 

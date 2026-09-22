@@ -4,7 +4,7 @@ obj/
 TestResults/
 *.user
 *.suo
-appsettings.Development.json
 *.db
-.idea
+.idea/
 *.iml
+.skill-code-review/

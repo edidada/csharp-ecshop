@@ -1,12 +1,12 @@
 # curl HTTP 接口测试
 
-下列命令是当前已实现 URL 的验收示例。开发服务器假设监听 `127.0.0.1:8080`，SQLite 初始化数据存在商品 `12`。全部 curl 显式禁用代理，避免本机代理配置干扰 localhost 测试。
+当前框架阶段只有健康检查可验收；下面的业务命令是 URL 实现后逐项启用的验收模板，不能在当前阶段作为已实现功能宣称。开发服务器监听 `127.0.0.1:8080`。全部 curl 显式禁用代理，避免本机代理配置干扰 localhost 测试。
 
 ```bash
 export BASE_URL=http://127.0.0.1:8080
 export COOKIE_JAR="$(mktemp)"
 curl --noproxy '*' -fsS "$BASE_URL/healthz" | jq .
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/goods/12" | jq .
+curl --noproxy '*' -i -fsS "$BASE_URL/readyz"
 curl --noproxy '*' -fsS "$BASE_URL/api/v1/goods?category_id=1&page=1&page_size=20" | jq .
 ```
 

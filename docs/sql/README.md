@@ -22,8 +22,8 @@
 
 ```bash
 mysql --host=127.0.0.1 --port=3306 --user=root -p \
-  -e 'CREATE DATABASE ecshop_cpp CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;'
-mysql --host=127.0.0.1 --port=3306 --user=root -p ecshop_cpp \
+  -e 'CREATE DATABASE ecshop CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;'
+mysql --host=127.0.0.1 --port=3306 --user=root -p ecshop \
   < docs/sql/001_core_schema.mysql8.sql
 ```
 

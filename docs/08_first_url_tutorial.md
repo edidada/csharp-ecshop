@@ -1,43 +1,12 @@
-# 第一个 URL：商品详情
+# 第一个业务 URL（审核后开始）
 
-已实现 `GET /api/v1/goods/{id}`。它对应 PHP 项目的 `goods.php?id=12`，但改为 JSON API，并只返回上架商品。
+业务 URL 尚未实现。审核通过后的第一个目标是 `GET /api/v1/home` 或 `GET /api/v1/goods/{id}`；推荐先实现商品详情，因为它对应 PHP `goods.php?id=` 且是只读路径。
 
-## 目录如何阅读
+每一个 URL 按此顺序完成：
 
-```text
-include/ecshop/domain/Goods.h                    # 纯业务数据
-include/ecshop/domain/GoodsRepository.h          # 数据来源的抽象接口
-src/infrastructure/InMemoryGoodsRepository.cpp   # 临时数据；下一步替换为 MySQL
-src/application/GetGoodsUseCase.cpp              # 查询规则
-src/http/GoodsRoutes.cpp                         # URL、HTTP 状态、JSON
-src/app/main.cpp                                 # 依赖装配与启动
-```
-
-请求 `GET /api/v1/goods/12` 返回商品 JSON。`GET /api/v1/goods/13` 返回 404，因为示例将它标记为下架；`GET /api/v1/goods/0` 返回 400。价格是字符串，刻意不使用 `double`。
-
-## 本机运行
-
-```bash
-cmake -S . -B build -G Ninja
-cmake --build build
-ctest --test-dir build --output-on-failure
-./build/ecshop_api
-```
-
-另开一个终端执行：
-
-```bash
-bash scripts/curl_goods_example.sh
-```
-
-## 写下一个 URL 时照抄
-
-1. 在 `domain` 定义实体和值对象，不能依赖 Crow 或 JSON。
-2. 在 `domain` 新增 Repository 接口，先写内存实现和单元测试。
-3. 在 `application` 写一个只做一个动作的 Use Case。
-4. 在 `http` 增加路由，验证参数并转 JSON。
-5. 为正常、参数错误、资源不存在各写一个 curl 测试。
-
-下一个推荐实现：`GET /api/v1/categories/{id}/goods?page=1&page_size=20`。它仍是只读功能，但能练习 query 参数、分页 DTO 和列表 JSON。
-
-本示例锁定项目内的 `third_party/cpp-httplib/httplib.h`，不依赖 Homebrew 或 vcpkg，因此 macOS 12、Linux 与 Windows 可用同一 CMake 命令构建。`vcpkg.json` 保留了 MySQL、日志、密码等后续阶段的依赖清单；数据库 URL 再引入它们。
+1. 从 PHP 入口和其调用的 library 中记录输入、可见性规则、表读取和响应含义。
+2. 在 `docs/03_api_contract.md` 固化请求、响应与错误码。
+3. 添加 Domain 规则、Application query/use case、Infrastructure 映射和 API endpoint。
+4. 为 SQLite 编写独立测试数据，再用 `WebApplicationFactory` 验证 HTTP 契约。
+5. 添加可复制 curl 脚本，并对 PostgreSQL、MySQL 跑同一契约测试。
+6. 只提交这一 URL 及其 migration、测试与文档。
