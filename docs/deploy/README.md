@@ -12,7 +12,7 @@ dotnet run --project src/EcShop.Api
 ## 生产步骤
 
 1. 创建不可登录账户 `ecshop` 和 `/opt/csharp-ecshop`；用 `dotnet publish -c Release -o /opt/csharp-ecshop` 生成部署产物，并将只读配置和写入目录分开。
-2. 为 MySQL 创建最小权限账户，执行 `docs/sql/001_core_schema.mysql8.sql` 和后续 migration。
+2. 为选定的 SQLite、PostgreSQL 或 MySQL 创建最小权限账户和空数据库，配置 `Database__Provider` 与 `Database__ConnectionString`。当前版本首次启动会按 EF 模型创建表并写入验收基础数据；正式上线前应将该模型固化为受版本控制、经三种 provider 验证的 migration。
 3. 把 `ecshop-api.service` 中的路径、环境文件、用户改为实际值，`systemctl enable --now ecshop-api`。
 4. 安装 `nginx.conf` 的 server 块，配置证书，`nginx -t && systemctl reload nginx`。
 5. 配置备份、日志轮转、健康检查与告警；发布采用新二进制 + `systemctl restart`，失败可回滚上个二进制。

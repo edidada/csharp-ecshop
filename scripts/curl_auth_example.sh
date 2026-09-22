@@ -7,7 +7,7 @@ password='safe-password-123'
 printf '%s\n' '1) Register (expected: HTTP 201)'
 register_body=$(curl --noproxy '*' --fail-with-body --silent --show-error --request POST "$base_url/api/v1/auth/register" \
   --header 'Content-Type: application/json' \
-  --data "{\"username\":\"$username\",\"email\":\"$username@example.test\",\"password\":\"$password\"}")
+  --data "{\"username\":\"$username\",\"email\":\"$username@example.test\",\"password\":\"$password\",\"agreementAccepted\":true}")
 printf '%s\n' "$register_body" | sed 's/"access_token":"[^"]*"/"access_token":"***"/'
 
 printf '%s\n' '2) Login (expected: HTTP 200)'

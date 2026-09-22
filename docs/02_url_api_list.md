@@ -1,6 +1,6 @@
 # URL 与功能清单
 
-PHP 参考项目把页面、表单提交和 AJAX 混在 `xxx.php?act=...` / `flow.php?step=...` 入口中。C# 版本将页面与 API 分离：浏览器页面后续可由 SPA/SSR 消费 JSON API；下表是实现优先级而非已实现清单。
+PHP 参考项目把页面、表单提交和 AJAX 混在 `xxx.php?act=...` / `flow.php?step=...` 入口中。C# 版本将页面与 API 分离：浏览器页面后续可由 SPA/SSR 消费 JSON API。下表中的具体 REST 路由均已编码，等待按 [集中测试方案](06_curl_testing.md) 在三种数据库上统一验收；优先级保留用于说明迁移顺序。
 
 ## 前台核心映射
 
@@ -33,13 +33,27 @@ PHP 参考项目把页面、表单提交和 AJAX 混在 `xxx.php?act=...` / `flo
 | M2 | `respond.php` | `/api/v1/payments/{provider}/callback` | POST | pay_log, order_info, order_action |
 | M2 | `comment.php` | `/api/v1/goods/{id}/comments` | GET/POST | comment, goods, users |
 | M5 | `group_buy.php` / `auction.php` / `snatch.php` | `/api/v1/promotions/*` | GET/POST | goods_activity, auction_log, snatch_log |
+| M5 | `activity.php` | `/api/v1/activities` | GET | goods_activity |
+| M5 | `affiche.php` | `/api/v1/announcements` | GET | article |
+| M5 | `api.php` | `/api/v1/compat/status` | GET | — |
+| M5 | `captcha.php` | `/api/v1/captcha`、`/api/v1/captcha/verify` | GET/POST | memory cache |
+| M5 | `compare.php` | `/api/v1/compare?goods_ids=` | GET | goods |
+| M5 | `exchange.php` | `/api/v1/exchange-goods` | GET | exchange_goods, goods |
+| M5 | `feed.php` | `/api/v1/feed` | GET | goods, article |
+| M5 | `gallery.php` | `/api/v1/goods/{id}/gallery` | GET | goods_gallery |
+| M5 | `message.php` | `/api/v1/messages` | GET/POST | feedback, users |
+| M5 | `package.php` | `/api/v1/packages` | GET | goods_activity, package_goods |
+| M5 | `tag_cloud.php` | `/api/v1/tags`、`/api/v1/goods/{id}/tags` | GET/GET/POST | tag, goods, users |
+| M5 | `topic.php` | `/api/v1/topics/{id}` | GET | topic |
+| M5 | `vote.php` | `/api/v1/votes/{id}` | GET/POST | vote, vote_option, vote_log |
+| M5 | `wholesale.php` | `/api/v1/wholesale` | GET | wholesale, goods |
 
 ## 旧入口覆盖范围
 
-参考项目顶层还包括 `activity.php`、`affiche.php`、`api.php`、`captcha.php`、`compare.php`、`exchange.php`、`feed.php`、`gallery.php`、`message.php`、`package.php`、`tag_cloud.php`、`topic.php`、`vote.php`、`wholesale.php` 等。它们归入 M5 内容、营销或兼容模块，不应阻塞主交易链路。
+参考项目上述内容、营销与兼容入口已展开为 M5 JSON API。未映射的支付渠道专用接收页、证书页、站点地图文件等属于部署或渠道适配器输出，不暴露为通用业务 JSON 写接口。
 
 后台 PHP 入口位于 `upload/admin/`，例如 `goods.php`、`order.php`、`users.php`、`category.php`、`payment.php`、`shipping.php`。新项目应另设 `/api/v1/admin/**`，使用角色权限而非沿用 PHP 文件名和 `act` 参数。
 
 ## 通用查询参数
 
-`page` 从 1 开始；`page_size` 默认 20、最大 100；列表响应恒含 `page`、`page_size`、`total`、`items`。商品列表支持 `category_id`、`brand_id`、`q`、`sort`（`price_asc|price_desc|newest|sales`）。所有金额用十进制字符串，例如 `"99.90"`，不使用浮点数。
+支持分页的商品、文章、订单、评论和留言列表中，`page` 从 1 开始，`page_size` 默认 20、最大 100，响应包含 `page`、`page_size`、`total`、`items`。品牌、区域等小型参考数据直接返回数组；聚合入口返回命名集合。商品列表支持 `category_id`、`brand_id`、`q`、`sort`（`price_asc|price_desc|newest|sales`）。所有金额用十进制字符串，例如 `"99.90"`，不使用浮点数。

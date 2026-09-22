@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -6,7 +5,7 @@ using Xunit;
 
 namespace EcShop.Api.Tests;
 
-public sealed class CatalogEndpointTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public sealed class CatalogEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     private static readonly long[] StandardProductOptions = [1001, 1005];
 

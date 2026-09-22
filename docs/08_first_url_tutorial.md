@@ -1,12 +1,12 @@
-# 第一个业务 URL（审核后开始）
+# URL 实现与验收工作流
 
-业务 URL 尚未实现。审核通过后的第一个目标是 `GET /api/v1/home` 或 `GET /api/v1/goods/{id}`；推荐先实现商品详情，因为它对应 PHP `goods.php?id=` 且是只读路径。
+具体 REST URL 已完成编码。后续修改任何 URL 时，保持以下顺序：
 
-每一个 URL 按此顺序完成：
+1. 对照 PHP 入口及其 library，确认输入、可见性规则、数据库读写和状态变化。
+2. 在 [API 契约](03_api_contract.md) 更新请求、响应、错误码和鉴权约束。
+3. 同步修改实体映射、endpoint 与三 provider 可执行的持久化逻辑。
+4. 在独立 SQLite 测试库中补充 `WebApplicationFactory` 契约测试，测试不可依赖执行顺序或上次运行残留数据。
+5. 将正向主链路加入 [全 URL 冒烟脚本](../scripts/curl_all_urls.sh)，将错误、并发和幂等场景加入 [集中测试方案](06_curl_testing.md)。
+6. SQLite、PostgreSQL、MySQL 使用同一 HTTP 脚本集中验收，结果通过后再提交。
 
-1. 从 PHP 入口和其调用的 library 中记录输入、可见性规则、表读取和响应含义。
-2. 在 `docs/03_api_contract.md` 固化请求、响应与错误码。
-3. 添加 Domain 规则、Application query/use case、Infrastructure 映射和 API endpoint。
-4. 为 SQLite 编写独立测试数据，再用 `WebApplicationFactory` 验证 HTTP 契约。
-5. 添加可复制 curl 脚本，并对 PostgreSQL、MySQL 跑同一契约测试。
-6. 只提交这一 URL 及其 migration、测试与文档。
+商品详情 `GET /api/v1/goods/{id}` 可作为新环境的最小业务验证：商品 12 应为 200，下架商品 13 应为 404；健康和就绪探针不等价于业务表已正确映射。

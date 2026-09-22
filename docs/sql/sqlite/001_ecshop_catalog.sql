@@ -50,6 +50,26 @@ CREATE TABLE IF NOT EXISTS ecs_pay_log (
 CREATE TABLE IF NOT EXISTS ecs_goods_activity (
  act_id INTEGER PRIMARY KEY AUTOINCREMENT, act_name VARCHAR(255) NOT NULL, act_type VARCHAR(32) NOT NULL, goods_id INTEGER NOT NULL, start_time INTEGER NOT NULL, end_time INTEGER NOT NULL, is_finished INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(goods_id) REFERENCES ecs_goods(goods_id));
 CREATE INDEX IF NOT EXISTS idx_ecs_activity_active ON ecs_goods_activity(act_type,start_time,end_time,is_finished);
+CREATE TABLE IF NOT EXISTS ecs_goods_gallery (
+ img_id INTEGER PRIMARY KEY AUTOINCREMENT, goods_id INTEGER NOT NULL, img_url VARCHAR(255) NOT NULL, img_desc VARCHAR(255) NOT NULL DEFAULT '', thumb_url VARCHAR(255) NOT NULL DEFAULT '', img_original VARCHAR(255) NOT NULL DEFAULT '', FOREIGN KEY(goods_id) REFERENCES ecs_goods(goods_id));
+CREATE TABLE IF NOT EXISTS ecs_feedback (
+ msg_id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER NOT NULL DEFAULT 0, user_id INTEGER NOT NULL DEFAULT 0, user_name VARCHAR(60) NOT NULL DEFAULT '', user_email VARCHAR(120) NOT NULL DEFAULT '', msg_title VARCHAR(200) NOT NULL, msg_type INTEGER NOT NULL DEFAULT 0, msg_status INTEGER NOT NULL DEFAULT 1, msg_content TEXT NOT NULL, msg_time INTEGER NOT NULL, order_id INTEGER NOT NULL DEFAULT 0, msg_area INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS ecs_tag (
+ tag_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL DEFAULT 0, goods_id INTEGER NOT NULL, tag_words VARCHAR(255) NOT NULL, UNIQUE(user_id,goods_id,tag_words));
+CREATE TABLE IF NOT EXISTS ecs_topic (
+ topic_id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(255) NOT NULL, intro TEXT NOT NULL DEFAULT '', start_time INTEGER NOT NULL, end_time INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS ecs_vote (
+ vote_id INTEGER PRIMARY KEY AUTOINCREMENT, vote_name VARCHAR(250) NOT NULL, start_time INTEGER NOT NULL, end_time INTEGER NOT NULL, can_multi INTEGER NOT NULL DEFAULT 0, vote_count INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS ecs_vote_option (
+ option_id INTEGER PRIMARY KEY AUTOINCREMENT, vote_id INTEGER NOT NULL, option_name VARCHAR(250) NOT NULL, option_count INTEGER NOT NULL DEFAULT 0, option_order INTEGER NOT NULL DEFAULT 100);
+CREATE TABLE IF NOT EXISTS ecs_vote_log (
+ log_id INTEGER PRIMARY KEY AUTOINCREMENT, vote_id INTEGER NOT NULL, user_id INTEGER NOT NULL, vote_time INTEGER NOT NULL, UNIQUE(vote_id,user_id));
+CREATE TABLE IF NOT EXISTS ecs_wholesale (
+ act_id INTEGER PRIMARY KEY AUTOINCREMENT, goods_id INTEGER NOT NULL, goods_name VARCHAR(255) NOT NULL, rank_ids VARCHAR(255) NOT NULL DEFAULT '', prices TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS ecs_exchange_goods (
+ goods_id INTEGER PRIMARY KEY, exchange_integral INTEGER NOT NULL DEFAULT 0, is_exchange INTEGER NOT NULL DEFAULT 1, is_hot INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS ecs_package_goods (
+ package_id INTEGER NOT NULL, goods_id INTEGER NOT NULL, product_id INTEGER NOT NULL DEFAULT 0, goods_number INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(package_id,goods_id,product_id));
 INSERT OR IGNORE INTO ecs_category(cat_id, cat_name) VALUES(1, '示例分类');
 INSERT OR IGNORE INTO ecs_brand(brand_id, brand_name) VALUES(1, '示例品牌');
 INSERT OR IGNORE INTO ecs_article_cat(cat_id, cat_name, cat_desc) VALUES(1, '商城公告', '示例文章分类');
@@ -64,4 +84,15 @@ INSERT OR IGNORE INTO ecs_products(product_id,goods_id,goods_attr,product_sn,pro
 INSERT OR IGNORE INTO ecs_shipping(shipping_id,shipping_name,enabled,shipping_fee) VALUES(1,'标准快递',1,'8.00');
 INSERT OR IGNORE INTO ecs_payment(pay_id,pay_name,enabled,pay_fee) VALUES(1,'在线支付',1,'0.00');
 INSERT OR IGNORE INTO ecs_goods_activity(act_id,act_name,act_type,goods_id,start_time,end_time,is_finished) VALUES(1,'C# 示例团购','group-buy',12,0,4102444800,0);
+INSERT OR IGNORE INTO ecs_goods_activity(act_id,act_name,act_type,goods_id,start_time,end_time,is_finished) VALUES(2,'C# 示例礼包','package',12,0,4102444800,0);
+INSERT OR IGNORE INTO ecs_goods_gallery(img_id,goods_id,img_url,img_desc,thumb_url,img_original) VALUES(1,12,'/images/goods-12.jpg','示例商品图','/images/goods-12-thumb.jpg','/images/goods-12-original.jpg');
+INSERT OR IGNORE INTO ecs_tag(tag_id,user_id,goods_id,tag_words) VALUES(1,0,12,'C#');
+INSERT OR IGNORE INTO ecs_tag(tag_id,user_id,goods_id,tag_words) VALUES(2,0,12,'入门');
+INSERT OR IGNORE INTO ecs_topic(topic_id,title,intro,start_time,end_time) VALUES(1,'C# ECSHOP 专题','用于专题 URL 集中验收',0,4102444800);
+INSERT OR IGNORE INTO ecs_vote(vote_id,vote_name,start_time,end_time,can_multi,vote_count) VALUES(1,'示例投票',0,4102444800,0,0);
+INSERT OR IGNORE INTO ecs_vote_option(option_id,vote_id,option_name,option_count,option_order) VALUES(1,1,'满意',0,1);
+INSERT OR IGNORE INTO ecs_vote_option(option_id,vote_id,option_name,option_count,option_order) VALUES(2,1,'需要改进',0,2);
+INSERT OR IGNORE INTO ecs_wholesale(act_id,goods_id,goods_name,rank_ids,prices,enabled) VALUES(1,12,'C# 入门商品','','[{"quantity":10,"price":"39.90"}]',1);
+INSERT OR IGNORE INTO ecs_exchange_goods(goods_id,exchange_integral,is_exchange,is_hot) VALUES(12,4990,1,1);
+INSERT OR IGNORE INTO ecs_package_goods(package_id,goods_id,product_id,goods_number) VALUES(2,12,0,1);
 COMMIT;

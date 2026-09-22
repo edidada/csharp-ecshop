@@ -6,15 +6,14 @@
 flowchart LR
   Client[Browser / curl] --> Nginx
   Nginx --> Api[ASP.NET Core API]
-  Api --> MW[exception / request log / auth]
-  MW --> Endpoints[Endpoint modules + DTO validation]
-  Endpoints --> App[Application use cases]
-  App --> Domain[Domain rules]
-  App --> Repos[Repository interfaces]
-  Repos --> EF[EF Core / parameterized SQL]
+  Api --> MW[exception / request log]
+  MW --> Endpoints[Endpoint modules + DTO validation + authorization]
+  Endpoints --> EF[EF Core DbContext / transactions]
+  Endpoints -. reusable workflow .-> App[Application services]
+  App -. shared rules .-> Domain[Domain rules]
   EF --> Db[(SQLite / PostgreSQL / MySQL)]
 ```
 
-依赖只能向内：`Api -> Application -> Domain`，`Infrastructure -> Application + Domain`。Domain 不引用 ASP.NET Core、EF Core 或某个数据库 provider；API 的 endpoint 不写 SQL；Application 决定事务和授权编排。
+当前阶段采用按业务 URL 划分的垂直切片：Endpoint 负责 HTTP DTO、会话授权和用 EF Core 编排短事务，数据库 provider 与映射集中在 Infrastructure；Endpoint 不拼接 SQL，也不包含 provider 分支。Application 与 Domain 保持不依赖 ASP.NET Core/EF Core，供多个 URL 共享同一复杂流程或规则时抽取，避免为了层次本身制造只有一次调用的转发类。
 
-每个已迁移 URL 新增一个 endpoint module、request/response DTO、use case、需要时的 repository 接口与 EF 实现，并至少有正常、参数错误、未认证/未授权（若适用）和资源不存在的测试。
+每个已迁移 URL 放入对应 endpoint module，并有明确的 request/response DTO；跨模块复用或需要独立单元测试的业务流程再下沉 Application/Domain。每个 URL 的集中测试方案至少覆盖正常、参数错误、未认证/未授权（若适用）和资源不存在。

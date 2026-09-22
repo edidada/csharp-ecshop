@@ -59,6 +59,17 @@ Base URL 为 `http://localhost:8080/api/v1`。请求 JSON 使用 camelCase，响
 
 营销路由展开为 `GET/POST /promotions/{kind}`，kind 只允许 `group-buy`、`auction`、`snatch`。创建请求为 `{"name":"活动名","goodsId":12,"startTime":1700000000,"endTime":1700003600}`，写操作要求 Bearer token。
 
+## 旧前台内容与互动入口
+
+- `GET /activities`、`GET /announcements`、`GET /compat/status` 分别对应活动页、公告输出和旧 API 能力探测。
+- `GET /captcha` 创建五分钟有效的一次性算术挑战；`POST /captcha/verify` 请求 `{"challengeId":"...","answer":7}`，无论成功失败均消费挑战。
+- `GET /compare?goods_ids=12,14` 比较最多五件可见商品；任一商品下架或不存在时返回 404。
+- `GET /exchange-goods`、`GET /packages`、`GET /wholesale` 返回积分兑换、礼包和批发配置及其可见商品。
+- `GET /feed` 聚合最新商品与文章；`GET /goods/{id}/gallery` 返回商品相册。
+- `GET /messages` 返回已发布留言；认证用户用 `POST /messages` 提交 `title`、`content`、`type`、`orderId`。
+- `GET /tags` 返回聚合标签云；`GET /goods/{id}/tags` 返回商品标签；认证用户可用 `POST /goods/{id}/tags` 提交逗号分隔的 `tag`。
+- `GET /topics/{id}` 返回有效期内专题；`GET /votes/{id}` 返回投票和选项；认证用户用 `POST /votes/{id}` 提交 `{"optionIds":[1]}`，每个用户每个投票只能提交一次。
+
 ## 错误与分页
 
 业务校验使用 Problem Details（400）；未认证为 401；资源不存在或不归属为 404；版本、库存和非法状态冲突为 409。列表的 `page` 从 1 开始，`page_size` 默认 20、范围 1 到 100。详细负向测试矩阵见 [06_curl_testing.md](06_curl_testing.md)。

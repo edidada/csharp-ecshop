@@ -19,6 +19,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
+builder.Services.AddMemoryCache();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -52,6 +53,7 @@ app.MapOrderEndpoints();
 app.MapCommentEndpoints();
 app.MapPaymentEndpoints();
 app.MapPromotionEndpoints();
+app.MapLegacyContentEndpoints();
 app.Run();
 
 public partial class Program;

@@ -15,14 +15,15 @@ public static class PaymentEndpoints
     {
         // The mock adapter is deliberately the only built-in callback. Real providers belong in an adapter that validates its signature before this handler is invoked.
         if (!string.Equals(provider, "mock", StringComparison.Ordinal)) return Results.NotFound();
-        if (string.IsNullOrWhiteSpace(request.OrderSn) || string.IsNullOrWhiteSpace(request.TransactionId)) return Results.Problem(statusCode: 400, title: "validation_error", detail: "order_sn and transaction_id are required");
+        if (string.IsNullOrWhiteSpace(request.OrderSn) || request.OrderSn.Length > 40 || string.IsNullOrWhiteSpace(request.TransactionId) || request.TransactionId.Length > 120) return Results.Problem(statusCode: 400, title: "validation_error", detail: "order_sn and transaction_id are required and must fit their limits");
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var existing = await db.PaymentLogs.SingleOrDefaultAsync(x => x.Provider == provider && x.TransactionId == request.TransactionId, ct);
         if (existing is not null) return Results.Ok(new { accepted = true, duplicate = true });
-        var order = await db.Orders.SingleOrDefaultAsync(x => x.OrderSn == request.OrderSn, ct); if (order is null) return Results.NotFound();
+        var order = await db.Orders.AsNoTracking().SingleOrDefaultAsync(x => x.OrderSn == request.OrderSn, ct); if (order is null) return Results.NotFound();
         if (order.OrderStatus == 2) return Results.Conflict(new { code = "order_cancelled" });
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        order.PayStatus = 2;
+        var paid = await db.Orders.Where(x => x.OrderId == order.OrderId && x.OrderStatus == 0 && x.PayStatus == 0).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.PayStatus, 2), ct);
+        if (paid == 0) return Results.Conflict(new { code = "order_not_payable" });
         db.PaymentLogs.Add(new PaymentLog { OrderId = order.OrderId, Provider = provider, TransactionId = request.TransactionId, PaidAt = now });
         db.OrderActions.Add(new OrderAction { OrderId = order.OrderId, UserId = order.UserId, ActionNote = $"payment_confirmed:{provider}", LogTime = now });
         await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);

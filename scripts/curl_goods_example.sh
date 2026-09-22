@@ -10,7 +10,7 @@ curl --noproxy '*' --silent --show-error --write-out '\nHTTP %{http_code}\n' "$b
 
 printf '\n%s\n' '4) Search goods (expected: HTTP 200)'
 curl --noproxy '*' --fail-with-body --silent --show-error \
-  "$base_url/api/v1/goods?q=C%2B%2B&page=1&page_size=5"
+  "$base_url/api/v1/goods?q=C%23&page=1&page_size=5"
 
 printf '\n\n%s\n' '5) Quote a goods price (expected: HTTP 200)'
 curl --noproxy '*' --fail-with-body --silent --show-error \

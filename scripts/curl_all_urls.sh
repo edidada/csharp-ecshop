@@ -38,20 +38,42 @@ request 200 "$base_url/api/v1/categories/1/goods?page=1&page_size=20" | check '.
 request 200 "$base_url/api/v1/goods/12" | check '.id == 12'
 json 200 POST "$base_url/api/v1/goods/12/price-quote" '{"quantity":2,"productId":81,"attributeIds":[1001,1005]}' | check '.total == "109.80"'
 request 200 "$base_url/api/v1/goods?q=C%23&sort=price_asc" | check '.items | length > 0'
-request 200 "$base_url/api/v1/brands" | check '.items | length > 0'
+request 200 "$base_url/api/v1/brands" | check 'length > 0'
 request 200 "$base_url/api/v1/brands/1/goods" | check '.items | length > 0'
 request 200 "$base_url/api/v1/articles/1" | check '.id == 1'
 request 200 "$base_url/api/v1/article-categories/1/articles" | check '.items | length > 0'
-request 200 "$base_url/api/v1/regions?parent=0&type=1" | check '.items | length > 0'
+request 200 "$base_url/api/v1/regions?parent=0&type=1" | check 'length > 0'
+request 200 "$base_url/api/v1/activities" | check '.items | length > 0'
+request 200 "$base_url/api/v1/announcements" | check '.items | length > 0'
+request 200 "$base_url/api/v1/compat/status" | check '.version == "v1"'
+captcha="$(request 200 "$base_url/api/v1/captcha")"
+challenge_id="$(printf %s "$captcha" | jq -er '.challenge_id')"; question="$(printf %s "$captcha" | jq -er '.question')"
+read -r captcha_left _ captcha_right <<< "$question"
+json 200 POST "$base_url/api/v1/captcha/verify" "{\"challengeId\":\"$challenge_id\",\"answer\":$((captcha_left + captcha_right))}" | check '.valid == true'
+request 200 "$base_url/api/v1/compare?goods_ids=12" | check '.items[0].id == 12'
+request 200 "$base_url/api/v1/exchange-goods" | check '.items | length > 0'
+request 200 "$base_url/api/v1/feed" | check '.goods | length > 0'
+request 200 "$base_url/api/v1/goods/12/gallery" | check '.items | length > 0'
+request 200 "$base_url/api/v1/packages" | check '.items | length > 0'
+request 200 "$base_url/api/v1/tags" | check '.items | length > 0'
+request 200 "$base_url/api/v1/goods/12/tags" | check '.items | length > 0'
+request 200 "$base_url/api/v1/topics/1" | check '.id == 1'
+request 200 "$base_url/api/v1/votes/1" | check '.options | length > 0'
+request 200 "$base_url/api/v1/wholesale" | check '.items | length > 0'
 
 echo '[identity, address, comment and cart]'
 register="$(json 201 POST "$base_url/api/v1/auth/register" "{\"username\":\"$username\",\"email\":\"$email\",\"password\":\"$password\",\"agreementAccepted\":true}")"
 token="$(printf %s "$register" | jq -er '.access_token')"
+auth_json 200 GET "$base_url/api/v1/me" | check ".username == \"$username\""
 auth_json 200 PATCH "$base_url/api/v1/me" "{\"email\":\"updated-$email\"}" | check '.email | startswith("updated-")'
 address="$(auth_json 201 POST "$base_url/api/v1/me/addresses" '{"consignee":"curl","countryId":1,"provinceId":2,"cityId":0,"districtId":0,"address":"Road 1","mobile":"13800000000","zipcode":"200000","isDefault":true}')"
 address_id="$(printf %s "$address" | jq -er '.id')"
 auth_json 200 PATCH "$base_url/api/v1/me/addresses/$address_id" '{"consignee":"updated","countryId":1,"provinceId":2,"cityId":0,"districtId":0,"address":"Road 2","mobile":"13800000000","zipcode":"200001","isDefault":true}' | check '.consignee == "updated"'
 auth_json 200 GET "$base_url/api/v1/me/addresses" | check 'length > 0'
+auth_json 201 POST "$base_url/api/v1/messages" '{"title":"curl message","content":"all URL smoke message","type":0,"orderId":0}' | check '.id > 0'
+request 200 "$base_url/api/v1/messages" | check '.items | length > 0'
+auth_json 200 POST "$base_url/api/v1/goods/12/tags" "{\"tag\":\"curl-$suffix\"}" | check '.items | length == 1'
+auth_json 200 POST "$base_url/api/v1/votes/1" '{"optionIds":[1]}' | check '.accepted == true'
 auth_json 201 POST "$base_url/api/v1/goods/12/comments" '{"content":"curl all URL smoke"}' | check '.id > 0'
 request 200 "$base_url/api/v1/goods/12/comments?page=1&page_size=20" | check '.items | length > 0'
 cart="$(auth_json 201 POST "$base_url/api/v1/me/cart" '{"goodsId":12,"quantity":2}')"

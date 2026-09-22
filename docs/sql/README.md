@@ -2,10 +2,11 @@
 
 ## 文件
 
-- `001_core_schema.mysql8.sql`：M1--M4 所需的可执行 MySQL 8/InnoDB/utf8mb4 核心表，适合从零开始学习实现。
+- `001_core_schema.mysql8.sql`：早期目标模型的 MySQL 8 设计草案，仅用于对照，不应直接初始化当前 EF 模型。
+- `sqlite/001_ecshop_catalog.sql`：与当前 EF 列映射一致的 SQLite 开发初始化和演示数据脚本。
 - `legacy_ecshop_structure.sql`：从 PHP 参考项目原样复制的完整结构快照（88 表、1794 行、SHA-256 见 [上级 README](../README.md)），用于逐表查阅和后续迁移。来源为 `/Users/ibqo/Develop/git/github/php/ecshop/upload/install/data/structure.sql`。
 
-遗留快照使用 `TYPE=MyISAM`、`auto_increment`、无外键和 `ecs_` 前缀，不能不经审阅直接用于新项目生产库；新实现请使用 `001_core_schema.mysql8.sql` 加版本化 migration。
+遗留快照使用 `TYPE=MyISAM`、`auto_increment`、无外键和 `ecs_` 前缀，不能不经审阅直接用于新项目生产库。当前应用在空数据库上使用 EF Core `EnsureCreated` 建立与代码一致的模型；生产发布前应生成、审阅并验证 provider 对应的版本化 migration，不能直接执行早期 MySQL 草案。
 
 ## 原始表分组
 
@@ -23,8 +24,9 @@
 ```bash
 mysql --host=127.0.0.1 --port=3306 --user=root -p \
   -e 'CREATE DATABASE ecshop CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;'
-mysql --host=127.0.0.1 --port=3306 --user=root -p ecshop \
-  < docs/sql/001_core_schema.mysql8.sql
+Database__Provider=MySql \
+Database__ConnectionString='Server=127.0.0.1;Database=ecshop;User=ecshop;Password=change-me' \
+dotnet run --project src/EcShop.Api
 ```
 
 生产禁用 root；另建最小权限应用账户。数据导入另建版本化 migration，例如 `002_seed_regions.sql`，不能把演示数据与 DDL 混在一起。

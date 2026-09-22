@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using Xunit;
 
 namespace EcShop.Api.Tests;
 
-public sealed class HealthEndpointTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public sealed class HealthEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     [Fact]
     public async Task LivenessEndpointReturnsSuccess()

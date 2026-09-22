@@ -4,7 +4,7 @@
 
 ## 当前阶段：核心 URL 已编码，待集中验收
 
-解决方案使用 .NET 8 LTS 和 ASP.NET Core。M0、M1、M2 及清单中定义的 M5 营销路由均已接入；实现包含目录、账户、地址、购物车、结算、订单、评论、mock 支付回调及营销活动。测试方案和全量 URL 冒烟脚本见 [06_curl_testing.md](06_curl_testing.md)，按 SQLite、PostgreSQL、MySQL 分别集中执行后再提交。
+解决方案使用 .NET 8 LTS 和 ASP.NET Core。M0、M1、M2 及清单中定义的 M5 路由均已接入；实现包含目录、账户、地址、购物车、结算、订单、评论、mock 支付回调、营销活动，以及公告、验证码、比较、兑换、订阅源、相册、留言、礼包、标签、专题、投票和批发等旧前台入口。测试方案和全量 URL 冒烟脚本见 [06_curl_testing.md](06_curl_testing.md)，按 SQLite、PostgreSQL、MySQL 分别集中执行后再提交。
 
 ## 阅读顺序
 
@@ -22,8 +22,8 @@
 ```text
 src/
   EcShop.Api/             # ASP.NET Core host、路由、HTTP middleware
-  EcShop.Application/     # 每个 URL 的 command/query 与 use case
-  EcShop.Domain/          # 业务实体、值对象、规则与仓储接口
+  EcShop.Application/     # 跨 URL 复用的应用服务扩展点
+  EcShop.Domain/          # 不依赖 Web/EF 的共享领域规则扩展点
   EcShop.Infrastructure/  # EF Core、数据库实现、外部服务适配器
 tests/
   EcShop.Api.Tests/       # 真实 HTTP 边界测试

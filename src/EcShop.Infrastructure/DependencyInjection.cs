@@ -23,7 +23,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static void ConfigureDatabase(DbContextOptionsBuilder options, DatabaseOptions database)
+    internal static void ConfigureDatabase(DbContextOptionsBuilder options, DatabaseOptions database)
     {
         switch (database.Provider.Trim().ToLowerInvariant())
         {

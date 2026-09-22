@@ -7,14 +7,14 @@ password='safe-cart-password-123'
 
 register=$(curl --noproxy '*' --fail-with-body --silent --show-error --request POST "$base_url/api/v1/auth/register" \
   --header 'Content-Type: application/json' \
-  --data "{\"username\":\"$username\",\"email\":\"$username@example.test\",\"password\":\"$password\"}")
+  --data "{\"username\":\"$username\",\"email\":\"$username@example.test\",\"password\":\"$password\",\"agreementAccepted\":true}")
 token=$(printf '%s' "$register" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
 test -n "$token"
 auth_header="Authorization: Bearer $token"
 
 printf '%s\n' '1) Add cart item (expected: HTTP 201)'
 item=$(curl --noproxy '*' --fail-with-body --silent --show-error --request POST "$base_url/api/v1/me/cart" \
-  --header "$auth_header" --header 'Content-Type: application/json' --data '{"goods_id":12,"quantity":2}')
+  --header "$auth_header" --header 'Content-Type: application/json' --data '{"goodsId":12,"quantity":2}')
 item_id=$(printf '%s' "$item" | sed -n 's/.*"id":\([0-9][0-9]*\).*/\1/p')
 version=$(printf '%s' "$item" | sed -n 's/.*"version":\([0-9][0-9]*\).*/\1/p')
 test -n "$item_id" && test -n "$version"

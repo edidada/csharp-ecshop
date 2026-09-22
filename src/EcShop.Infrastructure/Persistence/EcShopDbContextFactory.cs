@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using EcShop.Infrastructure;
 
 namespace EcShop.Infrastructure.Persistence;
 
@@ -8,9 +9,13 @@ public sealed class EcShopDbContextFactory : IDesignTimeDbContextFactory<EcShopD
 {
     public EcShopDbContext CreateDbContext(string[] args)
     {
-        var options = new DbContextOptionsBuilder<EcShopDbContext>()
-            .UseSqlite("Data Source=ecshop.design.db")
-            .Options;
-        return new EcShopDbContext(options);
+        var database = new DatabaseOptions
+        {
+            Provider = Environment.GetEnvironmentVariable("Database__Provider") ?? "Sqlite",
+            ConnectionString = Environment.GetEnvironmentVariable("Database__ConnectionString") ?? "Data Source=ecshop.design.db"
+        };
+        var builder = new DbContextOptionsBuilder<EcShopDbContext>();
+        DependencyInjection.ConfigureDatabase(builder, database);
+        return new EcShopDbContext(builder.Options);
     }
 }

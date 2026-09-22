@@ -6,7 +6,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // URL use cases are registered here as each PHP endpoint is ported.
+        // Register cross-endpoint workflows here when a vertical slice needs reusable application logic.
         return services;
     }
 }

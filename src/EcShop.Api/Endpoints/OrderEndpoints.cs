@@ -33,9 +33,9 @@ public static class OrderEndpoints
         var payment = await db.PaymentMethods.SingleOrDefaultAsync(x => x.PayId == request.PaymentId && x.Enabled, ct);
         if (address is null || shipping is null || payment is null) return Results.NotFound();
 
-        var cart = await (from item in db.CartItems
+        var cart = await (from item in db.CartItems.AsNoTracking()
                           where item.UserId == user.UserId
-                          join goods in db.Goods on item.GoodsId equals goods.GoodsId
+                          join goods in db.Goods.AsNoTracking() on item.GoodsId equals goods.GoodsId
                           where goods.IsOnSale && !goods.IsDelete
                           select new { Item = item, Goods = goods }).ToListAsync(ct);
         if (cart.Count == 0) return Bad("cart is empty");
@@ -50,13 +50,25 @@ public static class OrderEndpoints
             OrderAmount = goodsAmount + shipping.ShippingFee + payment.PayFee, AddTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(), ClientRequestId = request.IdempotencyKey
         };
         db.Orders.Add(order);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync(ct);
+            db.ChangeTracker.Clear();
+            duplicate = await db.Orders.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.UserId && x.ClientRequestId == request.IdempotencyKey, ct);
+            if (duplicate is not null) return Results.Ok(Summary(duplicate));
+            throw;
+        }
         foreach (var row in cart)
         {
-            row.Goods.GoodsNumber -= row.Item.GoodsNumber;
+            var stockUpdated = await db.Goods.Where(x => x.GoodsId == row.Goods.GoodsId && x.GoodsNumber >= row.Item.GoodsNumber).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.GoodsNumber, x => x.GoodsNumber - row.Item.GoodsNumber), ct);
+            if (stockUpdated == 0) return Results.Conflict(new { code = "out_of_stock" });
             db.OrderItems.Add(new OrderItem { OrderId = order.OrderId, GoodsId = row.Goods.GoodsId, GoodsName = row.Goods.GoodsName, GoodsSn = row.Goods.GoodsSn, GoodsPrice = row.Goods.ShopPrice, GoodsNumber = row.Item.GoodsNumber });
-            db.CartItems.Remove(row.Item);
         }
+        await db.CartItems.Where(x => x.UserId == user.UserId).ExecuteDeleteAsync(ct);
         db.OrderActions.Add(new OrderAction { OrderId = order.OrderId, UserId = user.UserId, ActionNote = "created", LogTime = order.AddTime });
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -84,11 +96,12 @@ public static class OrderEndpoints
     {
         var user = await IdentityEndpoints.CurrentUserAsync(http, db, ct); if (user is null) return Results.Unauthorized();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var order = await db.Orders.SingleOrDefaultAsync(x => x.OrderId == id && x.UserId == user.UserId, ct); if (order is null) return Results.NotFound();
+        var order = await db.Orders.AsNoTracking().SingleOrDefaultAsync(x => x.OrderId == id && x.UserId == user.UserId, ct); if (order is null) return Results.NotFound();
         if (order.OrderStatus != 0 || order.PayStatus != 0) return Results.Conflict(new { code = "order_not_cancellable" });
-        var items = await db.OrderItems.Where(x => x.OrderId == id).ToListAsync(ct);
-        var goods = await db.Goods.Where(x => items.Select(i => i.GoodsId).Contains(x.GoodsId)).ToDictionaryAsync(x => x.GoodsId, ct);
-        foreach (var item in items) goods[item.GoodsId].GoodsNumber += item.GoodsNumber;
+        var cancelled = await db.Orders.Where(x => x.OrderId == id && x.UserId == user.UserId && x.OrderStatus == 0 && x.PayStatus == 0).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.OrderStatus, 2), ct);
+        if (cancelled == 0) return Results.Conflict(new { code = "order_not_cancellable" });
+        var items = await db.OrderItems.AsNoTracking().Where(x => x.OrderId == id).ToListAsync(ct);
+        foreach (var item in items) await db.Goods.Where(x => x.GoodsId == item.GoodsId).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.GoodsNumber, x => x.GoodsNumber + item.GoodsNumber), ct);
         order.OrderStatus = 2;
         db.OrderActions.Add(new OrderAction { OrderId = id, UserId = user.UserId, ActionNote = "cancelled_by_user", LogTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
         await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);

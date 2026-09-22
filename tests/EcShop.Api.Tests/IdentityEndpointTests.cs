@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -7,7 +6,7 @@ using Xunit;
 
 namespace EcShop.Api.Tests;
 
-public sealed class IdentityEndpointTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public sealed class IdentityEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     [Fact]
     public async Task RegisterLoginAndAddressEndpointsMaintainAuthenticatedProfile()
