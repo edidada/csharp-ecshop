@@ -2,9 +2,9 @@
 
 本仓库将 `third_party/shopex-ecshop/upload/` 的 PHP ECSHOP 功能逐个迁移为可测试的 C# JSON API；不是逐行翻译。PHP 的 `xxx.php?act=...` / `flow.php?step=...` 入口与新 API 的映射和实施顺序见 [02_url_api_list.md](02_url_api_list.md)。
 
-## 当前阶段：框架已建立，业务 URL 尚未开始
+## 当前阶段：核心 URL 已编码，待集中验收
 
-解决方案使用 .NET 8 LTS 和 ASP.NET Core。现已具备分层项目、数据库 provider 切换、结构化日志、Problem Details、OpenAPI、liveness/readiness 探针和 HTTP 集成测试骨架。除 `GET /healthz`、`GET /readyz` 外，URL 清单中的业务接口均未实现；审核通过后按 M1 起逐项实现并用 curl/集成测试验收、提交。
+解决方案使用 .NET 8 LTS 和 ASP.NET Core。M0、M1、M2 及清单中定义的 M5 营销路由均已接入；实现包含目录、账户、地址、购物车、结算、订单、评论、mock 支付回调及营销活动。测试方案和全量 URL 冒烟脚本见 [06_curl_testing.md](06_curl_testing.md)，按 SQLite、PostgreSQL、MySQL 分别集中执行后再提交。
 
 ## 阅读顺序
 
@@ -14,7 +14,7 @@
 4. [04_architecture.md](04_architecture.md)：项目边界与依赖方向。
 5. [05_detailed_design.md](05_detailed_design.md)：每个 URL 的实现约定。
 6. [03_api_contract.md](03_api_contract.md)：目标 API 契约。
-7. [06_curl_testing.md](06_curl_testing.md)：业务实现后的验收模板。
+7. [06_curl_testing.md](06_curl_testing.md)：集中验收方案与完整 URL 冒烟脚本。
 8. [deploy/README.md](deploy/README.md)：本地依赖与 Linux 部署模板。
 
 ## 项目结构

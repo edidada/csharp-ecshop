@@ -1,100 +1,41 @@
-# curl HTTP 接口测试
+# HTTP URL 测试方案
 
-当前框架阶段只有健康检查可验收；下面的业务命令是 URL 实现后逐项启用的验收模板，不能在当前阶段作为已实现功能宣称。开发服务器监听 `127.0.0.1:8080`。全部 curl 显式禁用代理，避免本机代理配置干扰 localhost 测试。
+集中验收脚本为 [scripts/curl_all_urls.sh](../scripts/curl_all_urls.sh)。它以当前 C# API 的实际 JSON 契约为准：请求字段采用 camelCase，响应字段采用 snake_case。
 
-```bash
-export BASE_URL=http://127.0.0.1:8080
-export COOKIE_JAR="$(mktemp)"
-curl --noproxy '*' -fsS "$BASE_URL/healthz" | jq .
-curl --noproxy '*' -i -fsS "$BASE_URL/readyz"
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/goods?category_id=1&page=1&page_size=20" | jq .
-```
+## 执行边界
 
-## 账号与购物车
+本轮只交付测试方案和脚本，集中测试稍后执行。届时服务先启动，再运行：
 
-```bash
-REGISTER=$(curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/auth/register" \
-  -H 'Content-Type: application/json' \
-  -d '{"username":"curl-user","email":"curl-user@example.test","password":"correct-horse-battery-staple"}')
-TOKEN=$(printf '%s' "$REGISTER" | jq -r .access_token)
+~~~bash
+BASE_URL=http://127.0.0.1:8080 bash scripts/curl_all_urls.sh
+~~~
 
-AUTH=(-H "Authorization: Bearer $TOKEN")
+要求本机具备 curl 与 jq。脚本自动创建唯一测试用户、不会打印 access token，并对每一个请求显式使用 curl 的 no-proxy 选项。支付成功订单会消耗一件演示库存，故应使用全新数据库，或在开始前保证商品 12 至少有 3 件可售库存。
 
-ADD=$(curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/me/cart" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' -d '{"goods_id":12,"quantity":2}')
-printf '%s\n' "$ADD" | jq .
-ITEM_ID=$(printf '%s' "$ADD" | jq -r .id)
-VERSION=$(printf '%s' "$ADD" | jq -r .version)
+## 正向 URL 覆盖
 
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/me/cart" "${AUTH[@]}" | jq .
-curl --noproxy '*' -i -fsS -X PATCH "$BASE_URL/api/v1/me/cart/$ITEM_ID" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' -d "{\"quantity\":3,\"version\":$VERSION}"
-curl --noproxy '*' -i -sS -X DELETE "$BASE_URL/api/v1/me/cart/$ITEM_ID" "${AUTH[@]}"
-```
+| 范围 | 覆盖路由/操作 | 验收点 |
+| --- | --- | --- |
+| 健康 | healthz、readyz | HTTP 200 |
+| 公开目录 | home、分类、商品、价格报价、搜索、品牌、文章、区域 | HTTP 200、分页及关键字段 |
+| 身份 | register、login、logout、GET/PATCH me | 201/200/204，注销后 token 返回 401 |
+| 地址 | GET/POST/PATCH me/addresses | 新地址 ID、更新、列表 |
+| 购物车 | GET/POST/PATCH/DELETE me/cart | 创建、版本更新、删除 |
+| 结算 | options、quote | 配送选项及 order_amount |
+| 订单 | create、同键重放、list、detail、cancel | 201/200、同订单 ID、取消状态 |
+| 评论 | GET/POST goods comments | 201/200 |
+| 支付 | mock callback 与重放 | accepted，第二次为 duplicate |
+| 营销 | group-buy、auction、snatch 的 GET/POST | 201/200 |
 
-可直接执行完整、无代理的购物车验收：`bash scripts/curl_cart_example.sh`。脚本创建一个带时间戳的本地测试用户，不显示 access token，并验证旧版本 PATCH 的 HTTP 409。
+这份脚本对应 docs/02_url_api_list.md 中所有具体 REST 路由；营销通配符已展开为三个当前支持的 kind。
 
-## 地址与报价
+## 第二阶段负向与并发方案
 
-```bash
-ADDRESS=$(curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/me/addresses" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' \
-  -d '{"consignee":"测试用户","country_id":1,"province_id":2,"city_id":52,"district_id":500,"address":"中山路 1 号","mobile":"13800000000","zipcode":"200000","is_default":true}')
-ADDRESS_ID=$(printf '%s' "$ADDRESS" | jq -r .id)
+集中冒烟通过后，按数据库逐一执行以下场景：
 
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/checkout/options" "${AUTH[@]}" | jq .
-QUOTE=$(curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/checkout/quote" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' \
-  -d "{\"address_id\":$ADDRESS_ID,\"shipping_id\":1,\"payment_id\":1}")
-printf '%s\n' "$QUOTE" | jq .
-```
-
-## 创建订单
-
-```bash
-ORDER_BODY="{\"address_id\":$ADDRESS_ID,\"shipping_id\":1,\"payment_id\":1,\"remark\":\"curl test\"}"
-ORDER=$(curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/orders" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' -H 'Idempotency-Key: curl-order-001' \
-  -d "$ORDER_BODY")
-printf '%s\n' "$ORDER" | jq .
-
-# 重放同一个请求：HTTP 200，返回相同订单和 replayed:true
-curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/orders" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' -H 'Idempotency-Key: curl-order-001' \
-  -d "$ORDER_BODY" | jq .
-
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/me/orders" "${AUTH[@]}" | jq .
-ORDER_ID=$(printf '%s' "$ORDER" | jq -r .id)
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/me/orders/$ORDER_ID" "${AUTH[@]}" | jq .
-
-# 仅 pending_payment 订单可取消；成功后库存回补。
-curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/me/orders/$ORDER_ID/cancel" "${AUTH[@]}" | jq .
-```
-
-将 `quantity` 改成 0 应得到 400 + `validation_error`；地址 ID 换成其他用户的地址或不存在的 ID，应得到 404。同一幂等键传入不同 `remark` 应得到 409；订单成功后 GET `/me/cart` 应为空。重复发送取消订单请求应得到 409，且库存只回补一次。
-
-## 商品评论
-
-```bash
-curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/goods/12/comments" "${AUTH[@]}" \
-  -H 'Content-Type: application/json' -d '{"content":"curl comment"}' | jq .
-curl --noproxy '*' -fsS "$BASE_URL/api/v1/goods/12/comments" | jq .
-```
-
-不带 Bearer token 发表应得到 401；向下架或不存在商品发表/读取应得到 404。
-
-## 支付回调
-
-开发环境的回调 secret 来自 `config/app.dev.conf`；生产请改为环境变量。订单创建成功后：
-
-```bash
-CALLBACK_BODY="{\"provider_trade_no\":\"curl-trade-001\",\"order_sn\":\"$(printf '%s' \"$ORDER\" | jq -r .order_sn)\",\"amount\":\"$(printf '%s' \"$ORDER\" | jq -r .order_amount)\"}"
-SIGNATURE=$(printf '%s' "$CALLBACK_BODY" | openssl dgst -sha256 -hmac "$PAYMENT_CALLBACK_SECRET" -hex | sed 's/^.* //')
-curl --noproxy '*' -fsS -X POST "$BASE_URL/api/v1/payments/mockpay/callback" \
-  -H 'Content-Type: application/json' -H "X-Payment-Signature: $SIGNATURE" \
-  -d "$CALLBACK_BODY" | jq .
-```
-
-同一 body 和签名重发应返回 `replayed:true`。错误签名应得到 401；金额不同应得到 409。
-
-测试结束后删除临时 cookie：`rm -f "$COOKIE_JAR"`。
+- 未认证访问受保护资源应为 401；访问非归属地址、购物车或订单应为 404。
+- 数量为 0、超库存、空购物车、无效配送/支付方式分别返回 400 或 409。
+- 用旧 version 更新购物车必须返回 409；同一 idempotencyKey 只创建一张订单。
+- 已取消或已支付订单不可二次取消；回调 provider 不存在为 404，重复流水号可安全重放。
+- 每个列表用 page、page_size 测试默认值、1、100 和越界值。
+- SQLite、PostgreSQL、MySQL 分别启动相同服务配置并执行脚本；后两者必须先完成迁移/建表，不能依赖 SQLite 的自动建表。
