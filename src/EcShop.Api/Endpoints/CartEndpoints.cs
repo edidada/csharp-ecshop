@@ -8,7 +8,7 @@ public static class CartEndpoints
 {
     public static IEndpointRouteBuilder MapCartEndpoints(this IEndpointRouteBuilder routes)
     {
-        var api = routes.MapGroup("/api/v1/me/cart"); api.MapGet("", GetAsync); api.MapPost("", AddAsync); api.MapPatch("/{id:long}", UpdateAsync); api.MapDelete("/{id:long}", DeleteAsync); return routes;
+        routes.MapGet("/api/v1/me/cart", GetAsync); routes.MapPost("/api/v1/me/cart", AddAsync); routes.MapPatch("/api/v1/me/cart/{id:long}", UpdateAsync); routes.MapDelete("/api/v1/me/cart/{id:long}", DeleteAsync); return routes;
     }
     private static async Task<IResult> GetAsync(HttpRequest http, EcShopDbContext db, CancellationToken ct)
     {

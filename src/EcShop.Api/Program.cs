@@ -40,7 +40,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false })
+    .WithMetadata(new HttpMethodMetadata(["GET"]));
 app.MapGet("/readyz", async (EcShopDbContext database, CancellationToken cancellationToken) =>
     await database.Database.CanConnectAsync(cancellationToken)
         ? Results.Ok()

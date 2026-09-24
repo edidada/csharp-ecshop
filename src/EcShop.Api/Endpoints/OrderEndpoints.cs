@@ -10,10 +10,9 @@ public static class OrderEndpoints
     public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/v1/orders", CreateAsync);
-        var mine = routes.MapGroup("/api/v1/me/orders");
-        mine.MapGet("", ListAsync);
-        mine.MapGet("/{id:long}", DetailAsync);
-        mine.MapPost("/{id:long}/cancel", CancelAsync);
+        routes.MapGet("/api/v1/me/orders", ListAsync);
+        routes.MapGet("/api/v1/me/orders/{id:long}", DetailAsync);
+        routes.MapPost("/api/v1/me/orders/{id:long}/cancel", CancelAsync);
         return routes;
     }
 
