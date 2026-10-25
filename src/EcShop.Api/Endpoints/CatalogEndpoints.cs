@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ public static class CatalogEndpoints
     public static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder routes)
     {
         var api = routes.MapGroup("/api/v1");
+        api.AddEndpointFilter<LoggingEndpointFilter>();
         api.MapGet("/home", HomeAsync);
         api.MapGet("/categories/{id:long}/goods", CategoryGoodsAsync);
         api.MapGet("/goods/{id:long}", GoodsAsync);

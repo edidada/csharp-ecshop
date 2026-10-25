@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -8,7 +9,9 @@ public static class CheckoutEndpoints
 {
     public static IEndpointRouteBuilder MapCheckoutEndpoints(this IEndpointRouteBuilder routes)
     {
-        var api = routes.MapGroup("/api/v1/checkout"); api.MapGet("/options", OptionsAsync); api.MapPost("/quote", QuoteAsync); return routes;
+        var api = routes.MapGroup("/api/v1/checkout");
+        api.AddEndpointFilter<LoggingEndpointFilter>();
+        api.MapGet("/options", OptionsAsync); api.MapPost("/quote", QuoteAsync); return routes;
     }
     private static async Task<IResult> OptionsAsync(HttpRequest http, EcShopDbContext db, CancellationToken ct)
     {

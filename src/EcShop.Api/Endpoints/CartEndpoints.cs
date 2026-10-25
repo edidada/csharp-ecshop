@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -8,7 +9,7 @@ public static class CartEndpoints
 {
     public static IEndpointRouteBuilder MapCartEndpoints(this IEndpointRouteBuilder routes)
     {
-        routes.MapGet("/api/v1/me/cart", GetAsync); routes.MapPost("/api/v1/me/cart", AddAsync); routes.MapPatch("/api/v1/me/cart/{id:long}", UpdateAsync); routes.MapDelete("/api/v1/me/cart/{id:long}", DeleteAsync); return routes;
+        routes.MapGet("/api/v1/me/cart", GetAsync).AddEndpointFilter<LoggingEndpointFilter>(); routes.MapPost("/api/v1/me/cart", AddAsync).AddEndpointFilter<LoggingEndpointFilter>(); routes.MapPatch("/api/v1/me/cart/{id:long}", UpdateAsync).AddEndpointFilter<LoggingEndpointFilter>(); routes.MapDelete("/api/v1/me/cart/{id:long}", DeleteAsync).AddEndpointFilter<LoggingEndpointFilter>(); return routes;
     }
     private static async Task<IResult> GetAsync(HttpRequest http, EcShopDbContext db, CancellationToken ct)
     {

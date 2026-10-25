@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ public static class IdentityEndpoints
     public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder routes)
     {
         var api = routes.MapGroup("/api/v1");
+        api.AddEndpointFilter<LoggingEndpointFilter>();
         api.MapPost("/auth/register", RegisterAsync); api.MapPost("/auth/login", LoginAsync); api.MapPost("/auth/logout", LogoutAsync); api.MapGet("/me", MeAsync); api.MapPatch("/me", UpdateMeAsync); api.MapGet("/me/addresses", AddressesAsync); api.MapPost("/me/addresses", AddAddressAsync); api.MapPatch("/me/addresses/{id:long}", UpdateAddressAsync); return routes;
     }
     private static async Task<IResult> RegisterAsync(RegisterRequest request, EcShopDbContext db, CancellationToken ct)

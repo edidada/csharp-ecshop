@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,7 @@ public static class PaymentEndpoints
 {
     public static IEndpointRouteBuilder MapPaymentEndpoints(this IEndpointRouteBuilder routes)
     {
-        routes.MapPost("/api/v1/payments/{provider}/callback", CallbackAsync);
+        routes.MapPost("/api/v1/payments/{provider}/callback", CallbackAsync).AddEndpointFilter<LoggingEndpointFilter>();
         return routes;
     }
 

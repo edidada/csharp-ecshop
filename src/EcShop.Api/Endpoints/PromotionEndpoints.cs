@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ public static class PromotionEndpoints
     public static IEndpointRouteBuilder MapPromotionEndpoints(this IEndpointRouteBuilder routes)
     {
         var api = routes.MapGroup("/api/v1/promotions");
+        api.AddEndpointFilter<LoggingEndpointFilter>();
         api.MapGet("/{kind}", ListAsync);
         api.MapPost("/{kind}", CreateAsync);
         return routes;

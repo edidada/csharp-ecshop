@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +8,8 @@ public static class CommentEndpoints
 {
     public static IEndpointRouteBuilder MapCommentEndpoints(this IEndpointRouteBuilder routes)
     {
-        routes.MapGet("/api/v1/goods/{id:long}/comments", ListAsync);
-        routes.MapPost("/api/v1/goods/{id:long}/comments", CreateAsync);
+        routes.MapGet("/api/v1/goods/{id:long}/comments", ListAsync).AddEndpointFilter<LoggingEndpointFilter>();
+        routes.MapPost("/api/v1/goods/{id:long}/comments", CreateAsync).AddEndpointFilter<LoggingEndpointFilter>();
         return routes;
     }
 

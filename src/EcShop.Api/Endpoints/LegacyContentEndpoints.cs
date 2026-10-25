@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ public static class LegacyContentEndpoints
     public static IEndpointRouteBuilder MapLegacyContentEndpoints(this IEndpointRouteBuilder routes)
     {
         var api = routes.MapGroup("/api/v1");
+        api.AddEndpointFilter<LoggingEndpointFilter>();
         api.MapGet("/activities", ActivitiesAsync);
         api.MapGet("/announcements", AnnouncementsAsync);
         api.MapGet("/compat/status", () => Results.Ok(new { api = "csharp-ecshop", version = "v1", capabilities = CompatibilityCapabilities }));

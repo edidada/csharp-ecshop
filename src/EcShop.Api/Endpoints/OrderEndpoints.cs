@@ -1,3 +1,4 @@
+using EcShop.Api.Filters;
 using EcShop.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -9,10 +10,10 @@ public static class OrderEndpoints
 {
     public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder routes)
     {
-        routes.MapPost("/api/v1/orders", CreateAsync);
-        routes.MapGet("/api/v1/me/orders", ListAsync);
-        routes.MapGet("/api/v1/me/orders/{id:long}", DetailAsync);
-        routes.MapPost("/api/v1/me/orders/{id:long}/cancel", CancelAsync);
+        routes.MapPost("/api/v1/orders", CreateAsync).AddEndpointFilter<LoggingEndpointFilter>();
+        routes.MapGet("/api/v1/me/orders", ListAsync).AddEndpointFilter<LoggingEndpointFilter>();
+        routes.MapGet("/api/v1/me/orders/{id:long}", DetailAsync).AddEndpointFilter<LoggingEndpointFilter>();
+        routes.MapPost("/api/v1/me/orders/{id:long}/cancel", CancelAsync).AddEndpointFilter<LoggingEndpointFilter>();
         return routes;
     }
 
