@@ -9,3 +9,5 @@ TestResults/
 *.iml
 .skill-code-review/
 .workbuddy
+*.db-shm
+*.db-wal
